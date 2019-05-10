@@ -7,7 +7,7 @@ class Board extends React.Component {
     super(props);
     // 0 = red ---> Player 1
     // 1 = black ---> Player 2
-    // 2 = blank
+    // 2 = blank ---> EMPTY SQUARE!
     this.state = {
       currentBoard: [
         [2, 2, 2, 2, 2, 2, 2],
@@ -17,39 +17,16 @@ class Board extends React.Component {
         [2, 2, 2, 2, 2, 2, 2],
         [2, 2, 2, 2, 2, 2, 2]
       ],
-      player1Turn: true
+      player1Turn: true,
+      gameWon: false
     }
   }
 
-  // squareClicked (xCoord, yCoord) {
-  //   console.log(`Click: ${xCoord}, ${yCoord}`);
-  //   var nextBoard = this.state.currentBoard;
-  //   var nextTurn = this.state.player1Turn;
-  //   if (nextBoard[xCoord][yCoord] === 1 || nextBoard[xCoord][yCoord] === 0) {
-  //     console.log('Try another square!');
-  //   } else {
-  //     if (nextTurn === true) {
-  //       nextBoard[xCoord][yCoord] = 0;
-  //       nextTurn = false;
-  //     } else {
-  //       nextBoard[xCoord][yCoord] = 1;
-  //       nextTurn = true;
-  //     }
-  //     this.setState({
-  //       currentBoard: nextBoard,
-  //       player1Turn: nextTurn
-  //     })
-  //   }
-  //   // Check for solutions
-  //   // Make the piece gravitate to the lowest square
-  // }
-
-
-  // When this.state.player1Turn or nextTurn === true, it's player 1's turn, who is playing red, and whose number is 0;
-  // When this.state.player1Turn or nextTurn === false, it's player 2's turn, who is playing black, and whose number is 1;
   squareClicked (xCoord, yCoord) {
-    console.log(`Click: ${xCoord}, ${yCoord}`);
-
+    if (this.state.gameWon === true) {
+      console.log('Start a new game!');
+      return
+    }
     var nextBoard = this.state.currentBoard;
     var nextTurn = this.state.player1Turn;
 
@@ -65,18 +42,22 @@ class Board extends React.Component {
         if (nextTurn === true) {
           nextBoard[i][yCoord] = 0;
           nextTurn = false;
-          debugger;
           this.setState({
             player1Turn: nextTurn
           });
+          this.checkRows(nextBoard);
+          this.checkColumns(nextBoard, yCoord);
+          this.checkMajorDiagonals(nextBoard);
           return;
         } else {
           nextBoard[i][yCoord] = 1;
           nextTurn = true;
-          debugger;
           this.setState({
             player1Turn: nextTurn
           });
+          this.checkRows(nextBoard);
+          this.checkColumns(nextBoard, yCoord);
+          this.checkMajorDiagonals(nextBoard);
           return;
         }
       } else {
@@ -84,24 +65,199 @@ class Board extends React.Component {
           if (nextTurn === true) {
             nextBoard[i - 1][yCoord] = 0;
             nextTurn = false;
-            debugger;
             this.setState({
               player1Turn: nextTurn
             });
+            this.checkRows(nextBoard);
+            this.checkColumns(nextBoard, yCoord);
+            this.checkMajorDiagonals(nextBoard);
             return;
           } else {
             nextBoard[i - 1][yCoord] = 1;
             nextTurn = true;
-            debugger;
             this.setState({
               player1Turn: nextTurn
             });
+            this.checkRows(nextBoard);
+            this.checkColumns(nextBoard, yCoord);
+            this.checkMajorDiagonals(nextBoard);
             return;
           }
         }
       }
       i++;
     }
+  }
+
+  checkRows(board) {
+    var inARow = 0;
+
+    for (var i = 0; i < board.length; i++) {
+      for (var k = 0; k < board[i].length; k++) {
+        if (board[i][k] === 0 && this.state.player1Turn === true) {
+          inARow += 1;
+          if (inARow === 4) {
+            debugger;
+            console.log('Congrats, Player 1 wins on a row!');
+            this.state.gameWon = true;
+            return true;
+          }
+        }
+        else if (board[i][k] === 1 && this.state.player1Turn === false) {
+          inARow += 1;
+          if (inARow === 4) {
+            console.log('Congrats, Player 2 wins on a row!');
+            this.state.gameWon = true;
+            return true;
+          }
+        } else {
+          inARow = 0;
+        }
+      }
+    }
+    inARow = 0;
+    return false;
+  }
+
+  checkColumns(board, column) {
+    var inARow = 0;
+    
+    for (var i = 0; i < board.length; i++) {
+      if (board[i][column] === 0 && this.state.player1Turn === true) {
+        inARow += 1;
+        if (inARow === 4) {
+          console.log('Congrats, Player 1 wins on a column!');
+          this.state.gameWon = true;
+          return true;
+        }
+      }
+      else if (board[i][column] === 1 && this.state.player1Turn === false) {
+        inARow += 1;
+        if (inARow === 4) {
+          console.log('Congrats, Player 2 wins on a column!');
+          this.state.gameWon = true;
+          return true;
+        }
+      } else {
+        inARow = 0;
+      }
+    }
+    inARow = 0;
+    return false;
+  }
+
+  checkMajorDiagonals(board) {
+    var inARow = 0;
+    var k = 0;
+
+    while (k < board.length) {
+      for (var i = 0; i < board.length; i++) {
+        if (board[i][k] === 0 && this.state.player1Turn === true) {
+          inARow += 1;
+          if (inARow === 4) {
+            console.log('Congrats, Player 1 wins on a diagonal!');
+            this.state.gameWon = true;
+            return true;
+          }
+        } else if (board[i][k] === 1 && this.state.player1Turn === false) {
+          inARow += 1;
+          if (inARow === 4) {
+            console.log('Congrats, Player 2 wins on a diagonal!');
+            this.state.gameWon = true;
+            return true;
+          }
+        } else {
+          inARow = 0;
+        }
+        k++;
+      }
+    }
+
+    inARow = 0;
+    var j = 0;
+
+    k = 1;
+    var x = 0;
+    var inARow = 0;
+    for (var x = 0; x < 4; x++) {
+      k = 0 + x;
+      while (k < board.length) {
+        for (var i = 0; i < board.length ; i++) {
+          if (k < board.length + 1) {
+            if (board[i][k] === 0 && this.state.player1Turn === true) {
+              inARow += 1;
+              if (inARow === 4) {
+                console.log('Congrats, Player 1 wins on a diagonal!');
+                this.state.gameWon = true;
+                return true;
+              }
+            } else if (board[i][k] === 1 && this.state.player1Turn === false) {
+              inARow += 1;
+              if (inARow === 4) {
+                console.log('Congrats, Player 2 wins on a diagonal!');
+                this.state.gameWon = true;
+                return true;
+              }
+            } else {
+              inARow = 0;
+            }
+          } else {
+            continue;
+          }
+          k++
+        }
+      }
+    }
+
+    k = 0;
+    x = 2;
+    i = 2;
+    j = 2;
+    inARow = 0;
+  
+    for (var x = 0; x < 4; x++) {
+      if (j === 0) {
+        break;
+      }
+      k = 0 + x;
+      while (k < board.length) {
+        for (var i = 0; i < board.length; i++) {
+          if (j > 0) {
+            if (k < board.length) {
+              if (board[k][i] === 0 && this.state.player1Turn === true) {
+                inARow += 1;
+                if (inARow === 4) {
+                  console.log('Congratulations, Player 1 wins on a lower diagonal!');
+                  this.state.gameWon = true;
+                  return;
+                }
+              } else if (board[k][i] === 1 && this.state.player2Turn === false) {
+                inARow += 1;
+                if (inARow === 4) {
+                  console.log('Congratulations, Player 2 wins on a lower diagonal!');
+                  this.state.gameWon = true;
+                  return;
+                }
+              } else {
+                inARow = 0;
+              }
+            } else {
+              j--
+              continue;
+            }
+            k++
+          } else {
+            break;
+          }
+        }
+        if (j === 0) {
+          break;
+        }
+        break;
+      }
+    }
+    inARow = 0;
+    return false;
   }
 
   render() {
